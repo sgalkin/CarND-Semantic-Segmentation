@@ -1,5 +1,6 @@
 # Semantic Segmentation
 
+[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 [![codebeat badge](https://codebeat.co/badges/fef2edb4-60a1-49ab-a1eb-666e94e8a216)](https://codebeat.co/projects/github-com-sgalkin-carnd-t3p2-master)
 
 ### Introduction
