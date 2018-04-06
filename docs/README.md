@@ -2,6 +2,9 @@
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 [![codebeat badge](https://codebeat.co/badges/fef2edb4-60a1-49ab-a1eb-666e94e8a216)](https://codebeat.co/projects/github-com-sgalkin-carnd-t3p2-master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/55a50d32bef74eea9128116cbf84b863)](https://www.codacy.com/app/tech.svg/CarND-T3P2?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgalkin/CarND-T3P2&amp;utm_campaign=Badge_Grade)
+[![CodeFactor](https://www.codefactor.io/repository/github/sgalkin/carnd-t3p2/badge)](https://www.codefactor.io/repository/github/sgalkin/carnd-t3p2)
+[![BCH compliance](https://bettercodehub.com/edge/badge/sgalkin/CarND-T3P2?branch=master)](https://bettercodehub.com/)
 
 ### Introduction
 In this project, you'll label the pixels of a road in images using a Fully Convolutional Network (FCN).
