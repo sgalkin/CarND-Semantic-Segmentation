@@ -139,13 +139,13 @@ def train_nn(sess,
     for i in range(epochs):
         print("Epoch: {} / {} ...".format(i + 1, epochs))
         for image, label in get_batches_fn(batch_size):
-            _, loss = sess.run([train_op, cross_entropy_loss],
-                               feed_dict={input_image: image,
-                                          correct_label: label,
-                                          #TODO: tune
-                                          keep_prob: 0.5,
-                                          learning_rate: 0.01})
-            print("Loss: = {:.3f}".format(loss))
+            logits, loss = sess.run([train_op, cross_entropy_loss],
+                                    feed_dict={input_image: image,
+                                               correct_label: label,
+                                               #TODO: tune
+                                               keep_prob: 0.5,
+                                               learning_rate: 0.01})
+            print("Loss: {:.6f}; IoU: {:6f}".format(loss, -1)) #tf.metrics.mean_iou(label, logits, 2)))
         print()
 tests.test_train_nn(train_nn)
 
@@ -180,7 +180,7 @@ def run():
     
             # Train NN using the train_nn function
             epochs = 10
-            batch_size = 1024
+            batch_size = 40
             correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
             learning_rate = tf.placeholder(tf.float32)
 
