@@ -2,7 +2,8 @@ import re
 import random
 import numpy as np
 import os.path
-import scipy.misc
+import skimage.io
+import skimage.transform
 import shutil
 import zipfile
 import time
@@ -33,7 +34,8 @@ def maybe_download_pretrained_vgg(data_dir):
         os.path.join(vgg_path, 'variables/variables.index'),
         os.path.join(vgg_path, 'saved_model.pb')]
 
-    missing_vgg_files = [vgg_file for vgg_file in vgg_files if not os.path.exists(vgg_file)]
+    missing_vgg_files = [vgg_file for vgg_file in vgg_files
+                         if not os.path.exists(vgg_file)]
     if missing_vgg_files:
         # Clean vgg dir
         if os.path.exists(vgg_path):
@@ -50,9 +52,8 @@ def maybe_download_pretrained_vgg(data_dir):
 
         # Extract vgg
         print('Extracting model...')
-        zip_ref = zipfile.ZipFile(os.path.join(vgg_path, vgg_filename), 'r')
-        zip_ref.extractall(data_dir)
-        zip_ref.close()
+        with zipfile.ZipFile(os.path.join(vgg_path, vgg_filename), 'r') as zip_ref:
+            zip_ref.extractall(data_dir)
 
         # Remove zip file to save space
         os.remove(os.path.join(vgg_path, vgg_filename))
@@ -84,8 +85,10 @@ def gen_batch_function(data_folder, image_shape):
             for image_file in image_paths[batch_i:batch_i+batch_size]:
                 gt_image_file = label_paths[os.path.basename(image_file)]
 
-                image = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
-                gt_image = scipy.misc.imresize(scipy.misc.imread(gt_image_file), image_shape)
+                #image = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
+                #gt_image = scipy.misc.imresize(scipy.misc.imread(gt_image_file), image_shape)
+                image = skimage.transform.resize(skimage.io.imread(image_file), image_shape)
+                gt_image = skimage.transform.resize(skimage.io.imread(gt_image_file), image_shape)
 
                 gt_bg = np.all(gt_image == background_color, axis=2)
                 gt_bg = gt_bg.reshape(*gt_bg.shape, 1)
