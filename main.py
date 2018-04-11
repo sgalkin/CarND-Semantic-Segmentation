@@ -55,8 +55,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: tune
-    l2_weight = 1e-3
-    stddev = 1e-2
+    l2_weight = 1e-5
+    stddev = 1e-3
 
     output = vgg_layer7_out
     output = tf.stop_gradient(output)
@@ -155,7 +155,7 @@ def train_nn(sess,
                                                correct_label: label,
                                                #TODO: tune
                                                keep_prob: 0.5,
-                                               learning_rate: 0.001})
+                                               learning_rate: 0.005})
             sess.run(confusion, feed_dict={input_image: image,
                                            correct_label: label,
                                            keep_prob: 1.0})
@@ -197,8 +197,8 @@ def run():
 
         with tf.summary.FileWriter("logs", sess.graph) as writer:
             # Train NN using the train_nn function
-            epochs = 1
-            batch_size = 1 #34
+            epochs = 15
+            batch_size = 34
             correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
             learning_rate = tf.placeholder(tf.float32)
 

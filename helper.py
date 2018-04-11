@@ -122,11 +122,11 @@ def gen_test_output(sess, logits, keep_prob, image_pl, data_folder, image_shape)
         segmentation = (im_softmax > 0.5).reshape(image_shape[0], image_shape[1], 1)
         mask = np.dot(segmentation, np.array([[0, 255, 0, 127]]))
         mask = Image.fromarray(np.uint8(mask), mode='RGBA') #scipy.misc.toimage(mask, mode="RGBA")
-        street_im = Image.fromarray(image).convert('RGBA') #scipy.misc.toimage(image)
-#        street_im.paste(mask, mask=mask.split()[3])
-        result = Image.alpha_composite(street_im, mask)
+        street_im = Image.fromarray(image) #scipy.misc.toimage(image)
+        street_im.paste(mask, box=None, mask=mask)
+        #result = Image.alpha_composite(street_im, mask)
 
-        yield os.path.basename(image_file), np.array(mask)
+        yield os.path.basename(image_file), np.array(street_im)
 
 
 def save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image):
