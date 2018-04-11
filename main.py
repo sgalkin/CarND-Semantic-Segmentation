@@ -167,7 +167,6 @@ def train_nn(sess,
         print()
 tests.test_train_nn(train_nn)
 
-
 def run():
     num_classes = 2
     image_shape = (160, 576)
@@ -199,7 +198,7 @@ def run():
         with tf.summary.FileWriter("logs", sess.graph) as writer:
             # Train NN using the train_nn function
             epochs = 1
-            batch_size = 34
+            batch_size = 1 #34
             correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
             learning_rate = tf.placeholder(tf.float32)
 
