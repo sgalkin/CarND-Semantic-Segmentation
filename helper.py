@@ -1,12 +1,14 @@
 import re
 import random
 import numpy as np
+import os
 import os.path
 import skimage.io
 import skimage.transform
 import shutil
 import zipfile
 import time
+import warnings
 import tensorflow as tf
 from glob import glob
 from urllib.request import urlretrieve
@@ -58,6 +60,25 @@ def maybe_download_pretrained_vgg(data_dir):
         # Remove zip file to save space
         os.remove(os.path.join(vgg_path, vgg_filename))
 
+def augment(data_folder, output_folder, image_shape):
+    sources = ['image_2', 'gt_image_2']
+    
+    for d, dst in ((d, os.path.join(output_folder, d))
+                   for d in sources):
+        os.makedirs(dst, exist_ok=True)
+        for f in glob(os.path.join(data_folder, d, '*.png')):
+            src = np.uint8(255*skimage.transform.resize(skimage.io.imread(f),
+                                                        image_shape,
+                                                        mode='reflect'))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                skimage.io.imsave(os.path.join(dst, os.path.basename(f)), src)
+            fsrc = np.fliplr(src)
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                skimage.io.imsave(os.path.join(dst, "fl_" + os.path.basename(f)), fsrc)
+        
 
 def gen_batch_function(data_folder, image_shape):
     """
@@ -87,8 +108,13 @@ def gen_batch_function(data_folder, image_shape):
 
                 #image = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
                 #gt_image = scipy.misc.imresize(scipy.misc.imread(gt_image_file), image_shape)
-                image = np.uint8(255.*skimage.transform.resize(skimage.io.imread(image_file), image_shape, mode='reflect'))
-                gt_image = np.uint8(255.*skimage.transform.resize(skimage.io.imread(gt_image_file), image_shape, mode='reflect'))
+                image = skimage.io.imread(image_file)
+                gt_image = skimage.io.imread(gt_image_file)
+                if not image_shape is None:
+                    image = skimage.transform.resize(image, image_shape, mode='reflect')
+                    gt_image = skimage.transform.resize(gt_image, image_shape, mode='reflect')
+                image = np.uint8(image)
+                gt_image = np.uint8(gt_image)
 
                 gt_bg = np.all(gt_image == background_color, axis=2)
                 gt_bg = gt_bg.reshape(*gt_bg.shape, 1)
