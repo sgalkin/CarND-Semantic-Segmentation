@@ -10,10 +10,10 @@ import project_tests as tests
 L2_WEIGHT = 1e-3
 STDDEV = 1e-2
 
-LEARNING_RATE=0.005
+LEARNING_RATE=0.003
 KEEP_PROB=0.5
 
-EPOCHS = 15
+EPOCHS = 20
 BATCH_SIZE = 34
 
 
