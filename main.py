@@ -10,10 +10,10 @@ import project_tests as tests
 L2_WEIGHT = 1e-3
 STDDEV = 1e-2
 
-LEARNING_RATE=0.003
+LEARNING_RATE=0.0005
 KEEP_PROB=0.5
 
-EPOCHS = 20
+EPOCHS = 30
 BATCH_SIZE = 34
 
 
@@ -125,7 +125,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 tests.test_optimize(optimize)
 
 
-def train_nn(sess,
+def train_nn(sess, saver,
              epochs, batch_size, get_batches_fn,
              train_op, cross_entropy_loss,
              input_image, correct_label,
@@ -136,6 +136,7 @@ def train_nn(sess,
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
+    :param saver: TF Saver
     :param epochs: Number of epochs
     :param batch_size: Batch size
     :param get_batches_fn: Function to get batches of training data.  Call using get_batches_fn(batch_size)
@@ -170,6 +171,10 @@ def train_nn(sess,
                                            keep_prob: 1.0})
             print("Loss: {:.6f}; IoU: {:6f}".format(loss, mean_iou)) #tf.metrics.mean_iou(label, logits, 2)))
         print()
+        if saver is not None:
+            pass
+            #saver.save(sess, 'model', global_step=i)
+
 tests.test_train_nn(train_nn)
 
 def run():
@@ -189,7 +194,7 @@ def run():
     helper.augment(os.path.join(data_dir, 'data_road/training'), augment_dir, image_shape)
 
     with tf.Session() as sess:
-
+ 
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
         # Create function to get batches
@@ -201,6 +206,7 @@ def run():
         # Build NN using load_vgg, layers, and optimize function
         input, keep_prob, vgg_layer3, vgg_layer4, vgg_layer7 = load_vgg(sess, vgg_path)
         output = layers(vgg_layer3, vgg_layer4, vgg_layer7, num_classes)
+        saver = tf.train.Saver()
 
         # Train NN using the train_nn function
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
@@ -208,9 +214,9 @@ def run():
 
         logits, train_op, cross_entropy_loss, iou, confusion = optimize(output, correct_label, learning_rate, num_classes)
 
-        train_nn(sess, EPOCHS, BATCH_SIZE, get_batches_fn, train_op, cross_entropy_loss,
+        train_nn(sess, saver, EPOCHS, BATCH_SIZE, get_batches_fn, train_op, cross_entropy_loss,
                  input, correct_label, keep_prob, learning_rate, iou, confusion)
-            
+    
         # Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input)
         

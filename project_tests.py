@@ -128,6 +128,7 @@ def test_train_nn(train_nn):
     with tf.Session() as sess:
         parameters = {
             'sess': sess,
+            'saver': None,
             'epochs': epochs,
             'batch_size': batch_size,
             'get_batches_fn': get_batches_fn,
