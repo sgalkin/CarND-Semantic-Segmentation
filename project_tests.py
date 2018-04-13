@@ -1,5 +1,7 @@
 import sys
 import os
+import warnings
+
 from copy import deepcopy
 from glob import glob
 from unittest import mock
@@ -7,6 +9,7 @@ from unittest import mock
 import numpy as np
 import tensorflow as tf
 
+from distutils.version import LooseVersion
 
 def test_safe(func):
     """
@@ -54,7 +57,21 @@ class TmpMock(object):
     def __exit__(self, type, value, traceback):
         setattr(self.module, self.attrib_name, self.original_attrib)
 
+@test_safe
+def test_tensorflow_version():
+    # Check TensorFlow Version
+    assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), \
+        'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
+    print('TensorFlow Version: {}'.format(tf.__version__))
 
+@test_safe
+def test_gpu_availability():
+    # Check for a GPU
+    if not tf.test.gpu_device_name():
+        warnings.warn('No GPU found. Please use a GPU to train your neural network.')
+    else:
+        print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
+    
 @test_safe
 def test_load_vgg(load_vgg, tf_module):
     with TmpMock(tf_module.saved_model.loader, 'load') as mock_load_model:
@@ -119,29 +136,30 @@ def test_train_nn(train_nn):
         shape = [batach_size_parm, 2, 3, 3]
         return np.arange(np.prod(shape)).reshape(shape)
 
-    train_op = tf.constant(0)
-    cross_entropy_loss = tf.constant(10.11)
-    input_image = tf.placeholder(tf.float32, name='input_image')
-    correct_label = tf.placeholder(tf.float32, name='correct_label')
-    keep_prob = tf.placeholder(tf.float32, name='keep_prob')
-    learning_rate = tf.placeholder(tf.float32, name='learning_rate')
-    with tf.Session() as sess:
-        parameters = {
-            'sess': sess,
-            'saver': None,
-            'epochs': epochs,
-            'batch_size': batch_size,
-            'get_batches_fn': get_batches_fn,
-            'train_op': train_op,
-            'cross_entropy_loss': cross_entropy_loss,
-            'input_image': input_image,
-            'correct_label': correct_label,
-            'keep_prob': keep_prob,
-            'learning_rate': learning_rate,
-            'iou': tf.constant(0),
-            'confusion': tf.constant(0)
-        }
-        _prevent_print(train_nn, parameters)
+    with tf.Graph().as_default() as g:
+        train_op = tf.Variable(0)
+        cross_entropy_loss = tf.constant(10.11)
+        input_image = tf.placeholder(tf.float32, name='input_image')
+        correct_label = tf.placeholder(tf.float32, name='correct_label')
+        keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+        learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+        tf.global_variables_initializer()
+        with tf.Session() as sess:
+            parameters = {
+                'sess': sess,
+                'epochs': epochs,
+                'batch_size': batch_size,
+                'get_batches_fn': get_batches_fn,
+                'train_op': train_op,
+                'cross_entropy_loss': cross_entropy_loss,
+                'input_image': input_image,
+                'correct_label': correct_label,
+                'keep_prob': keep_prob,
+                'learning_rate': learning_rate,
+                'iou': tf.constant(0),
+                'confusion': tf.constant(0)
+            }
+            _prevent_print(train_nn, parameters)
 
 
 @test_safe

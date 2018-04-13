@@ -3,31 +3,19 @@
 import os.path
 import tensorflow as tf
 import helper
-import warnings
-from distutils.version import LooseVersion
 import project_tests as tests
 
 L2_WEIGHT = 1e-3
 STDDEV = 1e-2
 
-LEARNING_RATE=0.0005
+LEARNING_RATE=0.0003
 KEEP_PROB=0.5
 
-EPOCHS = 30
+EPOCHS = 50
 BATCH_SIZE = 34
 
-
-# Check TensorFlow Version
-assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), \
-       'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
-print('TensorFlow Version: {}'.format(tf.__version__))
-
-# Check for a GPU
-if not tf.test.gpu_device_name():
-    warnings.warn('No GPU found. Please use a GPU to train your neural network.')
-else:
-    print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
-
+tests.test_tensorflow_version()
+tests.test_gpu_availability()
 
 def load_vgg(sess, vgg_path):
     """
@@ -108,24 +96,34 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
     labels = correct_label #tf.reshape(correct_label, (-1, num_classes))
 
-    cross_entropy_loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels))
-    #TODO: tune
-    regularizer = 1
-    regularizer_loss = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    with tf.name_scope('cross_entropy'):
+        with tf.name_scope('softmax'):
+            cross_entropy_loss = tf.reduce_mean(
+                tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels))
+        with tf.name_scope('total'):
+            regularizer = 1
+            regularizer_loss = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+            total_loss = cross_entropy_loss + regularizer*regularizer_loss
+    tf.summary.scalar('softmax', cross_entropy_loss)
+    tf.summary.scalar('total', total_loss)
     
-    train = optimizer.minimize(cross_entropy_loss + regularizer*regularizer_loss)
+    with tf.name_scope('train'):
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        train = optimizer.minimize(total_loss)
 
-    prediction = tf.argmax(nn_last_layer, axis=3)
-    truth = correct_label[:, :, :, 1]
-    iou, confusion = tf.metrics.mean_iou(truth, prediction, num_classes)
+    with tf.name_scope('evaluate'):
+        with tf.name_scope('prediction'):
+            prediction = tf.argmax(nn_last_layer, axis=3)
+        with tf.name_scope('IoU'):
+            truth = correct_label[:, :, :, 1]
+            iou, confusion = tf.metrics.mean_iou(truth, prediction, num_classes)
+    tf.summary.scalar('IoU', iou)
                                                     
-    return logits, train, cross_entropy_loss, iou, confusion
+    return logits, train, total_loss, iou, confusion
 tests.test_optimize(optimize)
 
 
-def train_nn(sess, saver,
+def train_nn(sess,
              epochs, batch_size, get_batches_fn,
              train_op, cross_entropy_loss,
              input_image, correct_label,
@@ -136,7 +134,6 @@ def train_nn(sess, saver,
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
-    :param saver: TF Saver
     :param epochs: Number of epochs
     :param batch_size: Batch size
     :param get_batches_fn: Function to get batches of training data.  Call using get_batches_fn(batch_size)
@@ -147,19 +144,23 @@ def train_nn(sess, saver,
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter('./logs/train', sess.graph)
+
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
         
+    saver = tf.train.Saver()
     print("Training...")
-    for i in range(epochs):
-        print("Epoch: {} / {} ...".format(i + 1, epochs))
+    for i in range(1, epochs + 1):
+        print("\nEpoch: {}/{}".format(i, epochs))
         for image, label in get_batches_fn(batch_size):
-            logits, loss = sess.run([train_op, cross_entropy_loss],
-                                    feed_dict={input_image: image,
-                                               correct_label: label,
-                                               #TODO: tune
-                                               keep_prob: KEEP_PROB,
-                                               learning_rate: LEARNING_RATE})
+            summary, logits, loss = sess.run([merged, train_op, cross_entropy_loss],
+                                             feed_dict={input_image: image,
+                                                        correct_label: label,
+                                                        keep_prob: KEEP_PROB,
+                                                        learning_rate: LEARNING_RATE})
+            train_writer.add_summary(summary, i)
             
             sess.run(confusion,
                      feed_dict={input_image: image,
@@ -169,13 +170,12 @@ def train_nn(sess, saver,
                                 feed_dict={input_image: image,
                                            correct_label: label,
                                            keep_prob: 1.0})
-            print("Loss: {:.6f}; IoU: {:6f}".format(loss, mean_iou)) #tf.metrics.mean_iou(label, logits, 2)))
-        print()
-        if saver is not None:
-            pass
-            #saver.save(sess, 'model', global_step=i)
-
-tests.test_train_nn(train_nn)
+            print("Loss: {:.6f}; IoU: {:6f}".format(loss, mean_iou))
+    
+        if i % 10 == 0:
+            saver.save(sess, './fcn.ckpt', global_step=i)
+    saver.save(sess, './fcn.ckpt')
+#tests.test_train_nn(train_nn)
 
 def run():
     num_classes = 2
@@ -193,20 +193,18 @@ def run():
     #  https://www.cityscapes-dataset.com/
     helper.augment(os.path.join(data_dir, 'data_road/training'), augment_dir, image_shape)
 
-    with tf.Session() as sess:
- 
-        # Path to vgg model
-        vgg_path = os.path.join(data_dir, 'vgg')
-        # Create function to get batches
-        get_batches_fn = helper.gen_batch_function(augment_dir, None) #os.path.join(data_dir, 'data_road/training'), image_shape)
+    # Path to vgg model
+    vgg_path = os.path.join(data_dir, 'vgg')
+    # Create function to get batches
+    get_batches_fn = helper.gen_batch_function(augment_dir, None)
                                                                                                                 
-        # OPTIONAL: Augment Images for better results
-        #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
+    # OPTIONAL: Augment Images for better results
+    #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
+    with tf.Session() as sess:
         # Build NN using load_vgg, layers, and optimize function
         input, keep_prob, vgg_layer3, vgg_layer4, vgg_layer7 = load_vgg(sess, vgg_path)
         output = layers(vgg_layer3, vgg_layer4, vgg_layer7, num_classes)
-        saver = tf.train.Saver()
 
         # Train NN using the train_nn function
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
@@ -214,13 +212,11 @@ def run():
 
         logits, train_op, cross_entropy_loss, iou, confusion = optimize(output, correct_label, learning_rate, num_classes)
 
-        train_nn(sess, saver, EPOCHS, BATCH_SIZE, get_batches_fn, train_op, cross_entropy_loss,
+        train_nn(sess, EPOCHS, BATCH_SIZE, get_batches_fn, train_op, cross_entropy_loss,
                  input, correct_label, keep_prob, learning_rate, iou, confusion)
     
         # Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input)
-        
-        # OPTIONAL: Apply the trained model to a video
 
 
 if __name__ == '__main__':
