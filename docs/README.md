@@ -15,7 +15,7 @@ images, just most of them.
 ### Demo
 Sample image
 
-![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/um_000032.png)
+![](https://github.com/sgalkin/CarND-T3P2/raw/master/docs/um_000032.png)
 
 The full collection of testing dataset could be found [here](https://mega.nz/#F!Fo9lWBYB!50QXprRFfldAm2Rahr_ptg)
 
@@ -84,9 +84,9 @@ The project uses `FCN-8` Neural Network Architecture as described in [1].
 
 #### Results
 * Loss - _0.114276_
-  ![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/Loss.png)
+  ![](https://github.com/sgalkin/CarND-T3P2/raw/master/docs/Loss.png)
 * IoU - _0.904379_
-  ![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/IoU.png)
+  ![](https://github.com/sgalkin/CarND-T3P2/raw/master/docs/IoU.png)
 * Weights - available [here](https://mega.nz/#F!godnVTTb!A183NNrVFcXho2qkbl2zmg)
 
 ## Reference
