@@ -8,10 +8,10 @@ import project_tests as tests
 L2_WEIGHT = 1e-3
 STDDEV = 1e-2
 
-LEARNING_RATE=0.0003
-KEEP_PROB=0.5
+LEARNING_RATE=0.0001
+KEEP_PROB=0.4
 
-EPOCHS = 50
+EPOCHS = 75
 BATCH_SIZE = 34
 
 tests.test_tensorflow_version()
@@ -151,6 +151,7 @@ def train_nn(sess,
     sess.run(tf.local_variables_initializer())
         
     saver = tf.train.Saver()
+    img = 0
     print("Training...")
     for i in range(1, epochs + 1):
         print("\nEpoch: {}/{}".format(i, epochs))
@@ -160,7 +161,8 @@ def train_nn(sess,
                                                         correct_label: label,
                                                         keep_prob: KEEP_PROB,
                                                         learning_rate: LEARNING_RATE})
-            train_writer.add_summary(summary, i)
+            train_writer.add_summary(summary, img)
+            img += 1
             
             sess.run(confusion,
                      feed_dict={input_image: image,
