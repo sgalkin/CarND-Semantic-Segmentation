@@ -1,53 +1,94 @@
 # Semantic Segmentation
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-[![codebeat badge](https://codebeat.co/badges/fef2edb4-60a1-49ab-a1eb-666e94e8a216)](https://codebeat.co/projects/github-com-sgalkin-carnd-t3p2-master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55a50d32bef74eea9128116cbf84b863)](https://www.codacy.com/app/tech.svg/CarND-T3P2?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgalkin/CarND-T3P2&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/sgalkin/carnd-t3p2/badge)](https://www.codefactor.io/repository/github/sgalkin/carnd-t3p2)
-[![BCH compliance](https://bettercodehub.com/edge/badge/sgalkin/CarND-T3P2?branch=master)](https://bettercodehub.com/)
 
-### Introduction
-In this project, you'll label the pixels of a road in images using a Fully Convolutional Network (FCN).
+### Overview
+In this project, implements Fully Convolutional Network (FCN) for semantic
+segmentation of a road in an image. Architecture on the FCN described in [1].
 
-### Setup
-##### Frameworks and Packages
-Make sure you have the following is installed:
- - [Python 3](https://www.python.org/)
- - [TensorFlow](https://www.tensorflow.org/)
- - [NumPy](http://www.numpy.org/)
- - [SciPy](https://www.scipy.org/)
-##### Dataset
-Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road.php) from [here](http://www.cvlibs.net/download.php?file=data_road.zip).  Extract the dataset in the `data` folder.  This will create the folder `data_road` with all the training a test images.
+### Goal
+The project labels at least _80%_ of the road and label no more than _20%_
+of non-road pixels as road. The model doesn't have to predict correctly all the
+images, just most of them.
 
-### Start
-##### Implement
-Implement the code in the `main.py` module indicated by the "TODO" comments.
-The comments indicated with "OPTIONAL" tag are not required to complete.
-##### Run
-Run the following command to run the project:
-```
+### Demo
+Sample image
+![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/um_000032.png)
+
+The full collection of testing dataset could be found [here](https://mega.nz/#F!Fo9lWBYB!50QXprRFfldAm2Rahr_ptg)
+
+### Usage
+```sh
 python main.py
 ```
-**Note** If running this in Jupyter Notebook system messages, such as those regarding test status, may appear in the terminal rather than the notebook.
 
-### Submission
-1. Ensure you've passed all the unit tests.
-2. Ensure you pass all points on [the rubric](https://review.udacity.com/#!/rubrics/989/view).
-3. Submit the following in a zip file.
- - `helper.py`
- - `main.py`
- - `project_tests.py`
- - Newest inference images from `runs` folder  (**all images from the most recent run**)
- 
- ### Tips
-- The link for the frozen `VGG16` model is hardcoded into `helper.py`.  The model can be found [here](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/vgg.zip)
-- The model is not vanilla `VGG16`, but a fully convolutional version, which already contains the 1x1 convolutions to replace the fully connected layers. Please see this [forum post](https://discussions.udacity.com/t/here-is-some-advice-and-clarifications-about-the-semantic-segmentation-project/403100/8?u=subodh.malgonde) for more information.  A summary of additional points, follow. 
-- The original FCN-8s was trained in stages. The authors later uploaded a version that was trained all at once to their GitHub repo.  The version in the GitHub repo has one important difference: The outputs of pooling layers 3 and 4 are scaled before they are fed into the 1x1 convolutions.  As a result, some students have found that the model learns much better with the scaling layers included. The model may not converge substantially faster, but may reach a higher IoU and accuracy. 
-- When adding l2-regularization, setting a regularizer in the arguments of the `tf.layers` is not enough. Regularization loss terms must be manually added to your loss function. otherwise regularization is not implemented.
- 
-### Using GitHub and Creating Effective READMEs
-If you are unfamiliar with GitHub , Udacity has a brief [GitHub tutorial](http://blog.udacity.com/2015/06/a-beginners-git-github-tutorial.html) to get you started. Udacity also provides a more detailed free [course on git and GitHub](https://www.udacity.com/course/how-to-use-git-and-github--ud775).
+### Project structure
+* `main.py` - the project entry point
+* `helper.py` - helper functions (download model, inference, etc)
+* `project_tests.py` - basic tests of correctness
 
-To learn about REAMDE files and Markdown, Udacity provides a free [course on READMEs](https://www.udacity.com/courses/ud777), as well. 
+### Dependencies
+#### Language
+* [`Python 3`](https://www.python.org/) - Python is a programming language that lets you work quickly
+and integrate systems more effectively
 
-GitHub also provides a [tutorial](https://guides.github.com/features/mastering-markdown/) about creating Markdown files.
+#### Tools
+* [`Conda`](https://conda.io) - Package, dependency and environment management for any language—Python, R, Ruby, Lua, Scala, Java, JavaScript, C/ C++, FORTRAN
+
+#### Libraries and Frameworks
+* [`TensorFlow`](https://www.tensorflow.org/) - An open source machine learning framework for everyone
+* [`NumPy`](http://www.numpy.org/) - The fundamental package for scientific computing with Python
+* [`scikit-image`](http://scikit-image.org) - Image processing in Python
+* [`tqdm`](https://github.com/tqdm/tqdm) - A fast, extensible progress bar for Python and CLI
+
+#### Dataset
+* [`Kitti Road dataset`](http://www.cvlibs.net/datasets/kitti/eval_road.php) from [here](http://www.cvlibs.net/download.php?file=data_road.zip)
+
+### Run
+0. Clone [the](https://github.com/sgalkin/CarND-T3P2.git) repository.
+1. Download dataset.
+2. Extract the dataset in the `data` folder.  This will create the folder `data_road` with all the training a test images.
+3. Setup environment `conda env create -f environment.yml carnd-t3p2`
+4. Run `python main.py`
+
+### Implementation
+#### Architecture
+The project uses `FCN-8` Neural Network Architecture as described in [1].
+* Encoder - `VGG-16` [2]
+* Decoder
+  * restores original image resolution
+  * adds skip connection for _3rd_ layer
+  * adds skip connection for _4th_ layer
+  * _L2_ regularization used with weight _1e-3_ for each transpose convolution
+  * All weights initialized using _truncated normal distribution_ with standard
+    deviation _1e-2_
+
+#### Data Preparaion
+* Dataset was augmented by flipping all images from left to right
+
+#### Training
+* Batch size - _34_
+* Number of epochs - _75_
+* Initial learining rate - _0.0005_
+* Optimizer - ADAM
+* Encoder weights _frozen_
+
+#### Rational
+* _L2_ regularization helps to prevent overfitting since the train dataset is
+  very small
+* _Frozen_ encoder weight - prevent overfitting since the train dataset is
+  very small, increases speed of training
+* _Data augmentation_ - helps improve accuracy and prevent overfitting
+
+#### Results
+* Loss - _0.114276_
+  ![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/Loss.png)
+* IoU - _0.904379_
+  ![](https://github.com/sgalkin/CarND-T3P2/blob/master/docs/IoU.png)
+* Weights - available [here](https://mega.nz/#F!godnVTTb!A183NNrVFcXho2qkbl2zmg)
+
+## Reference
+1. J. Long, E. Shelhamer, T. Darrell, "Fully convolutional networks for semantic segmentation", 2014. [arXiv:1605.06211](https://arxiv.org/pdf/1605.06211.pdf)
+2. Very Deep Convolutional Networks for Large-Scale Image Recognition
+K. Simonyan, A. Zisserman. [arXiv:1409.1556](https://arxiv.org/pdf/1409.1556.pdf)
