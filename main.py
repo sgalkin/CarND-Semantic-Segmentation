@@ -205,7 +205,7 @@ def run():
 
     with tf.Session() as sess:
         # Build NN using load_vgg, layers, and optimize function
-        input, keep_prob, vgg_layer3, vgg_layer4, vgg_layer7 = load_vgg(sess, vgg_path)
+        inp, keep_prob, vgg_layer3, vgg_layer4, vgg_layer7 = load_vgg(sess, vgg_path)
         output = layers(vgg_layer3, vgg_layer4, vgg_layer7, num_classes)
 
         # Train NN using the train_nn function
@@ -215,10 +215,10 @@ def run():
         logits, train_op, cross_entropy_loss, iou, confusion = optimize(output, correct_label, learning_rate, num_classes)
 
         train_nn(sess, EPOCHS, BATCH_SIZE, get_batches_fn, train_op, cross_entropy_loss,
-                 input, correct_label, keep_prob, learning_rate, iou, confusion)
+                 inp, correct_label, keep_prob, learning_rate, iou, confusion)
     
         # Save inference data using helper.save_inference_samples
-        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, inp)
 
 
 if __name__ == '__main__':
