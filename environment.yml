@@ -1,4 +1,4 @@
-name: carnd-term3
+name: carnd-t3p2
 channels:
   - defaults
 dependencies:
@@ -93,7 +93,5 @@ dependencies:
   - zict=0.1.3=py36h3a3bf81_0
   - zlib=1.2.11=ha838bed_2
   - pip:
-    - moviepy==0.2.3.2
+    - enum34==1.1.6
     - tensorflow==1.4.1
-prefix: /home/sgalkin/anaconda3/envs/carnd-term3
-
