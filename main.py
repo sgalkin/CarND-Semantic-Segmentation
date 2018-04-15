@@ -53,7 +53,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     output = vgg_layer7_out
     output = tf.stop_gradient(output)
-    
+
     output = tf.layers.conv2d(output, num_classes,
                               kernel_size=(1, 1), strides=(1, 1), padding='SAME',
                               kernel_regularizer=tf.contrib.layers.l2_regularizer(L2_WEIGHT),

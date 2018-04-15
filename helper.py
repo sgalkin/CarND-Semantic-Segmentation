@@ -61,7 +61,7 @@ def maybe_download_pretrained_vgg(data_dir):
 
 def augment(data_folder, output_folder, image_shape):
     sources = ['image_2', 'gt_image_2']
-    
+
     for d, dst in ((d, os.path.join(output_folder, d))
                    for d in sources):
         os.makedirs(dst, exist_ok=True)
