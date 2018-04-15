@@ -106,7 +106,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
             total_loss = cross_entropy_loss + regularizer*regularizer_loss
     tf.summary.scalar('softmax', cross_entropy_loss)
     tf.summary.scalar('total', total_loss)
-    
+
     with tf.name_scope('train'):
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
         train = optimizer.minimize(total_loss)
@@ -156,11 +156,11 @@ def train_nn(sess,
     for i in range(1, epochs + 1):
         print("\nEpoch: {}/{}".format(i, epochs))
         for image, label in get_batches_fn(batch_size):
-            summary, logits, loss = sess.run([merged, train_op, cross_entropy_loss],
-                                             feed_dict={input_image: image,
-                                                        correct_label: label,
-                                                        keep_prob: KEEP_PROB,
-                                                        learning_rate: LEARNING_RATE})
+            summary, _, loss = sess.run([merged, train_op, cross_entropy_loss],
+                                        feed_dict={input_image: image,
+                                                   correct_label: label,
+                                                   keep_prob: KEEP_PROB,
+                                                   learning_rate: LEARNING_RATE})
             train_writer.add_summary(summary, img)
             img += 1
             

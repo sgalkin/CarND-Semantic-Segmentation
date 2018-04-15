@@ -77,7 +77,7 @@ def augment(data_folder, output_folder, image_shape):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 skimage.io.imsave(os.path.join(dst, "fl_" + os.path.basename(f)), fsrc)
-        
+
 
 def gen_batch_function(data_folder, image_shape):
     """
