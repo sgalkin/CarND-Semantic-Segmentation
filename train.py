@@ -8,7 +8,7 @@ import project_tests as tests
 L2_WEIGHT = 1e-3
 STDDEV = 1e-2
 
-LEARNING_RATE=0.0001
+LEARNING_RATE=0.0005
 KEEP_PROB=0.4
 
 EPOCHS = 75
